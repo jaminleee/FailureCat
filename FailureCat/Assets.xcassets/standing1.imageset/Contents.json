@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "cat1_standing.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
