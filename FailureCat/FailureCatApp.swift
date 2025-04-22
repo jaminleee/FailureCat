@@ -21,10 +21,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct FailureCatApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var coordinator = AppCoordinator()
     
     var body: some Scene {
         WindowGroup {
             MainView()
+                .environmentObject(coordinator)
         }
     }
 }

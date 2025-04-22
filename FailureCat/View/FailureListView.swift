@@ -79,9 +79,9 @@ struct FailureListView: View {
             }
             .padding(.top, 15)
             .padding(.horizontal, 20)
-            .navigationDestination(item: $selectedFailure) { failure in
-                FailureDetailView(failure: failure)
-            }
+//            .navigationDestination(item: $selectedFailure) { $failure in
+//                FailureDetailView(failure: $failure)
+//            }
         }
         .onAppear {
             FirestoreManager().fetchFailures { fetched in

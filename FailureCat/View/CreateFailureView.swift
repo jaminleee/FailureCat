@@ -10,7 +10,7 @@ import SwiftData
 
 struct CreateFailureView: View {
     @Environment(\.dismiss) private var dismiss
-    
+    @EnvironmentObject var coordinator: AppCoordinator
     @State private var text: String = ""
     @State private var selectedCategory: FailureCategory = .challenge
     
@@ -59,12 +59,12 @@ struct CreateFailureView: View {
                 if !text.isEmpty {
                     Button("완료") {
                         if let failure = existingFailure {
-                            let updated = Failure(id: failure.id, content: failure.content, date: Date(), category: selectedCategory.rawValue)
+                            let updated = Failure(id: failure.id, content: text, date: Date(), category: selectedCategory.rawValue)
                             
                             FirestoreManager.shared.updateFailure(updated) { result in
                                 switch result {
                                 case .success:
-                                    dismiss()
+                                    coordinator.goBack()
                                 case .failure(let error):
                                     print("업데이트 실패: \(error.localizedDescription)")
                                 }
@@ -75,7 +75,7 @@ struct CreateFailureView: View {
                             FirestoreManager.shared.addFailure(newFailure) { result in
                                 switch result {
                                 case .success:
-                                    dismiss()
+                                    coordinator.goBack()
                                 case .failure(let error):
                                     print("저장 실패: \(error.localizedDescription)")
                                 }

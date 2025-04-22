@@ -6,13 +6,14 @@
 //
 
 import Foundation
-import SwiftData
+import FirebaseFirestore
 
 @MainActor
 class MainViewModel: ObservableObject {
     @Published var failures: [Failure] = []
     
     private let firestore = FirestoreManager()
+    private var listener: ListenerRegistration?
     
     func loadFailures() {
         firestore.fetchFailures { [weak self] failures in
@@ -21,5 +22,14 @@ class MainViewModel: ObservableObject {
             }
         }
     }
+    
+    func listenToFailures() {
+        listener = firestore.listenToFailures { [weak self] failures in
+            self?.failures = failures
+        }
+    }
 
+    func stopListening() {
+        listener?.remove()
+    }
 }

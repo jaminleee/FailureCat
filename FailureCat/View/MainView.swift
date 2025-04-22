@@ -9,15 +9,16 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
-    @State private var isPresented = false
+//    @State private var isPresented = false
     @State private var selectedFailure: Failure?
     
 //    @Query(sort: \Failure.date, order: .reverse) private var failures: [Failure]
+    @EnvironmentObject var coordinator: AppCoordinator
     @StateObject private var viewModel = MainViewModel()
 
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $coordinator.path) {
             VStack(spacing: 0) {
                 
                 Image(.threadBlack)
@@ -35,7 +36,8 @@ struct MainView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Button(action: {
-                            isPresented = true
+//                            isPresented = true
+                            coordinator.goToCreate()
                         }) {
                             Label("실패 추가하기", systemImage: "")
                                 .font(.headline)
@@ -44,9 +46,6 @@ struct MainView: View {
                                 .background(.black.opacity(0.8))
                                 .tint(Color.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
-                        }
-                        .navigationDestination(isPresented: $isPresented) {
-                            CreateFailureView()
                         }
                     }
                     
@@ -73,7 +72,8 @@ struct MainView: View {
                             FailureRowView(failure: failure)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    selectedFailure = failure
+//                                    selectedFailure = failure
+                                    coordinator.goToDetail(failure: failure)
                                 }
                         }
                     }
@@ -144,13 +144,27 @@ struct MainView: View {
                 }
                 .ignoresSafeArea(.all)
             }
-            .navigationDestination(item: $selectedFailure) { failure in
-                FailureDetailView(failure: failure)
+//            .navigationDestination(item: $selectedFailure) { failure in
+//                FailureDetailView(failure: failure)
+//            }
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .create(let failure):
+                    CreateFailureView(failure: failure)
+                case .detail(let id):
+                    FailureDetailView(failureID: id)
+                }
             }
         }
         .tint(.black)
-        .onAppear {
-            viewModel.loadFailures()
+        .task {
+            viewModel.listenToFailures()
+        }
+//        .onAppear() {
+//            viewModel.loadFailures()
+//        }
+        .onDisappear {
+            viewModel.stopListening()
         }
     }
 }
