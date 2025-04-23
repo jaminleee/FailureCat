@@ -10,23 +10,24 @@ import SwiftUI
 struct FailureRowView: View {
     let failure: Failure
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            
-            Text(failure.content)
-                .lineLimit(1)
-            
-            HStack {
+        
+        HStack() {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(failure.content)
+                    .lineLimit(1)
+                
                 Text(dateString(from: failure.date))
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Spacer()
-                Text(failure.category)
-                    .font(.caption2)
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 8)
-                    .background(failure.categoryEnum.color)
-                    .clipShape(Capsule())
             }
+            
+            Spacer()
+            Text(failure.category)
+                .font(.caption2)
+                .padding(.vertical, 5)
+                .padding(.horizontal, 8)
+                .background(failure.categoryEnum.color)
+                .clipShape(Capsule())
         }
     }
     

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct MainView: View {
 //    @State private var isPresented = false
@@ -16,8 +15,8 @@ struct MainView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     @StateObject private var viewModel = MainViewModel()
 
-    
     var body: some View {
+        
         NavigationStack(path: $coordinator.path) {
             VStack(spacing: 0) {
                 
@@ -26,17 +25,16 @@ struct MainView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 180)
                     .ignoresSafeArea(.all)
-                //                    .background(Color.gray)
+
                 Group {
                     VStack(spacing: 0) {
                         Image(.catBlack)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 80)
+                            .frame(width: 60)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Button(action: {
-//                            isPresented = true
                             coordinator.goToCreate()
                         }) {
                             Label("실패 추가하기", systemImage: "")
@@ -50,7 +48,10 @@ struct MainView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        NavigationLink(destination: FailureListView()) {
+  
+                        Button {
+                            coordinator.goToList()
+                        } label: {
                             HStack {
                                 Text("실패 리스트")
                                     .font(.title2)
@@ -58,6 +59,8 @@ struct MainView: View {
                                 Spacer()
                             }
                         }
+                        .tint(.black)
+                        
                         Text("최근 실패 3가지다냥! 다시 보니 별거 아니지않냐옹?")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -72,7 +75,6 @@ struct MainView: View {
                             FailureRowView(failure: failure)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-//                                    selectedFailure = failure
                                     coordinator.goToDetail(failure: failure)
                                 }
                         }
@@ -83,90 +85,75 @@ struct MainView: View {
                 
                 Spacer()
                 
-                
                 ZStack(alignment: .top) {
                     Image(.grass)
                         .resizable()
                         .ignoresSafeArea(.all)
-                        .frame(height: 180)
+//                        .frame(height: 130)
+                        .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: .infinity)
                     
                     HStack(alignment: .bottom) {
-//                        ForEach(FailureCategory.allCases, id: \.self) { category in
-//                            let isMost = viewModel?.mostCategory == category
-//                                let imageName = isMost ? category.standingImage : category.sleepingImage
-//                                let imageSize: CGFloat = isMost ? 100 : 70
-//                            VStack {
-//                                Image(imageName)
-//                                    .resizable()
-//                                    .frame(width: imageSize, height: imageSize)
-//                                    .aspectRatio(contentMode: .fit)
-//                                
-//                                Text("\(category.rawvalue)냥")
-//                                    .font(.caption)
-//                                    .foregroundStyle(.black.opacity(0.6))
-//                            }
-//                            
-//                        }
-                                                VStack {
-                                                    Image(.sleeping1)
-                                                        .resizable()
-                                                        .frame(width: 70, height: 70)
-                                                        .aspectRatio(contentMode: .fit)
-                        
-                                                    Text("챌린지냥")
-                                                        .font(.caption)
-                                                        .foregroundStyle(.black.opacity(0.6))
-                                                }
-                                                VStack {
-                                                    Image(.standing2)
-                                                        .resizable()
-                                                        .aspectRatio(contentMode: .fit)
-                                                        .frame(width: 100, height: 100)
-                        
-                        
-                                                    Text("습관냥")
-                                                        .font(.caption)
-                                                        .foregroundStyle(.black.opacity(0.6))
-                                                }
-                                                VStack {
-                                                    Image(.sleeping3)
-                                                        .resizable()
-                                                        .frame(width: 70, height: 70)
-                                                        .aspectRatio(contentMode: .fit)
-                        
-                                                    Text("기타냥")
-                                                        .font(.caption)
-                                                        .foregroundStyle(.black.opacity(0.6))
-                                                }
+                        ForEach(FailureCategory.allCases, id: \.self) { category in
+                            let isMost = viewModel.mostCategories.contains(category)
+                            let imageName = isMost ? category.standingImage : category.sleepingImage
+                            let size: CGFloat = isMost ? 90 : 70
+
+                            VStack {
+                                Image(imageName)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: size, height: size)
+                                    
+                                Text("\(category.rawValue)냥")
+                                    .font(.caption)
+                                    .foregroundStyle(.black.opacity(0.6))
+                                    .padding(.vertical, 5)
+                                    .padding(.horizontal, 8)
+                                    .background(category.color)
+                                    .clipShape(Capsule())
+                            }
+                            .onTapGesture {
+                                SoundManager.shared.playSound(named: category.soundFileName)
+                                if let filter = FailureCategoryFilter.allCases.first(where: { $0.category == category }) {
+                                    coordinator.goToList(category: filter)
+                                }
+                            }
+                        }
                     }
                     .padding(.top, 30)
                 }
                 .ignoresSafeArea(.all)
             }
-//            .navigationDestination(item: $selectedFailure) { failure in
-//                FailureDetailView(failure: failure)
-//            }
+
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .create(let failure):
                     CreateFailureView(failure: failure)
                 case .detail(let id):
                     FailureDetailView(failureID: id)
+                case .list(let category):
+                    FailureListView(category: category)
                 }
             }
         }
         .tint(.black)
-        .task {
-            viewModel.listenToFailures()
-        }
-//        .onAppear() {
-//            viewModel.loadFailures()
+        
+//        .task {
+//            viewModel.listenToFailures()
 //        }
-        .onDisappear {
-            viewModel.stopListening()
+        .onAppear() {
+            viewModel.loadFailures()
         }
+        .onChange(of: coordinator.path) {
+            viewModel.loadFailures()
+        }
+//        .onDisappear {
+//            viewModel.stopListening()
+//        }
+        
     }
+    
 }
 
 #Preview {

@@ -9,10 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct CreateFailureView: View {
-    @Environment(\.dismiss) private var dismiss
+//    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var coordinator: AppCoordinator
     @State private var text: String = ""
     @State private var selectedCategory: FailureCategory = .challenge
+    @FocusState private var isTextEditorFocused: Bool
+
     
     let existingFailure: Failure?
     
@@ -34,26 +36,42 @@ struct CreateFailureView: View {
                         Image(category.imageName(isSelected: selectedCategory == category ))
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 60, height: 60)
+                            .frame(width: 50, height: 50)
                             
-                        Text(category.rawValue)
+                        Text("\(category.rawValue)냥")
+                            .font(.caption2)
                             .foregroundStyle(.black.opacity(0.6))
+                            .padding(.vertical, 3)
+                            .padding(.horizontal, 6)
+                            .background(category.color)
+                            .clipShape(Capsule())
+                            .padding(.top, 4)
                     }
                     .onTapGesture {
                         selectedCategory = category
+                        SoundManager.shared.playSound(named: selectedCategory.soundFileName)
                     }
                 }
             }
             
             
             TextEditor(text: $text)
-                .frame(minHeight: 100)
+                .focused($isTextEditorFocused)
+                .frame(minHeight: 70)
+                .contentMargins(.horizontal, 12)
+                .contentMargins(.vertical, 8)
+                .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray, lineWidth: 1)
+                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
                 )
         }
         .padding(.horizontal, 20)
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isTextEditorFocused = true
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if !text.isEmpty {
@@ -75,7 +93,7 @@ struct CreateFailureView: View {
                             FirestoreManager.shared.addFailure(newFailure) { result in
                                 switch result {
                                 case .success:
-                                    coordinator.goBack()
+                                       coordinator.goBack()
                                 case .failure(let error):
                                     print("저장 실패: \(error.localizedDescription)")
                                 }

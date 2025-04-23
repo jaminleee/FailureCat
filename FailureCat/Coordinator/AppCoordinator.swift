@@ -25,6 +25,10 @@ class AppCoordinator: ObservableObject {
             push(.detail(id: id))
     }
     
+    func goToList(category: FailureCategoryFilter? = nil) {
+        push(.list(category: category))
+    }
+    
     func goBack() {
         path.removeLast()
     }

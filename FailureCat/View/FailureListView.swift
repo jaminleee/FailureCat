@@ -30,16 +30,23 @@ enum FailureCategoryFilter: String, CaseIterable, Identifiable {
 }
 
 struct FailureListView: View {
-//    @Query(sort: \Failure.date, order: .reverse) private var failures: [Failure]
-    @State private var failures: [Failure] = []
-    @State private var selectedCategory: FailureCategoryFilter = .all
-    @State private var selectedFailure: Failure?
+    let initialCategory: FailureCategoryFilter?
+    @EnvironmentObject var coordinator: AppCoordinator
+//    @State private var failures: [Failure] = []
+    @State private var selectedCategory: FailureCategoryFilter
+//    @State private var selectedFailure: Failure?
+    @StateObject private var viewModel = FailureListViewModel()
+
+    init(category: FailureCategoryFilter? = nil) {
+        self.initialCategory = category
+        _selectedCategory = State(initialValue: category ?? .all)
+    }
     
     private var filteredFailures: [Failure] {
         if let category = selectedCategory.category {
-            return failures.filter { $0.category == category.rawValue }
+            return viewModel.failures.filter { $0.category == category.rawValue }
         } else {
-            return failures
+            return viewModel.failures
         }
     }
     
@@ -52,11 +59,12 @@ struct FailureListView: View {
                             selectedCategory = category
                         }) {
                             Text(category.rawValue)
-                                .font(.title3)
+                                .font(.callout)
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 8)
                                 .background(selectedCategory == category ? .black : .white)
-                                .foregroundStyle(selectedCategory == category ? .white : .black)
+                                .foregroundStyle(selectedCategory == category ? .white : .gray)
+                                .fontWeight(selectedCategory == category ? .bold : .regular)
                                 .clipShape(Capsule())
                                 .overlay(Capsule().stroke(.gray, lineWidth: 1))
                                 
@@ -72,20 +80,24 @@ struct FailureListView: View {
                         FailureRowView(failure: failure)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                selectedFailure = failure
+                                coordinator.goToDetail(failure: failure)
                             }
                     }
                 }
             }
             .padding(.top, 15)
             .padding(.horizontal, 20)
-//            .navigationDestination(item: $selectedFailure) { $failure in
-//                FailureDetailView(failure: $failure)
-//            }
         }
         .onAppear {
-            FirestoreManager().fetchFailures { fetched in
-                self.failures = fetched
+            viewModel.loadFailures()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    coordinator.goToCreate()
+                }) {
+                    Image(systemName: "plus")
+                }
             }
         }
     }

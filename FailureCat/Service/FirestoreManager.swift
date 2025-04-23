@@ -86,6 +86,7 @@ final class FirestoreManager {
                 completion(.failure(error))
                 return
             }
+            completion(.success(()))
         }
     }
     

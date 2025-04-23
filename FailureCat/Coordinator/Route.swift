@@ -10,5 +10,8 @@ import Foundation
 enum Route: Hashable {
     case create(failure: Failure? = nil)
     case detail(id: String)
+    case list(category: FailureCategoryFilter? = nil)
 }
+    
+
 

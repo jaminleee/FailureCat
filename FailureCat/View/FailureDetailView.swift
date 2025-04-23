@@ -61,6 +61,7 @@ struct FailureDetailView: View {
                         coordinator.goToCreate(failure: failure)
                     }
                     Button("삭제하기", role: .destructive) {
+                        
                         FirestoreManager.shared.deleteFailure(failure) { result in
                             switch result {
                             case .success:

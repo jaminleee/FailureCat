@@ -32,4 +32,16 @@ class MainViewModel: ObservableObject {
     func stopListening() {
         listener?.remove()
     }
+    
+    var categoryCount: [FailureCategory: Int] {
+        Dictionary(
+            grouping: failures,
+            by: { $0.categoryEnum }
+        ).mapValues { $0.count }
+    }
+    
+    var mostCategories: [FailureCategory] {
+        let maxCount = categoryCount.values.max() ?? 0
+        return categoryCount.filter { $0.value == maxCount }.map { $0.key }
+    }
 }

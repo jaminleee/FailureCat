@@ -23,6 +23,14 @@ enum FailureCategory: String, CaseIterable, Codable {
             return Color("color_etc")
         }
     }
+    
+    var soundFileName: String {
+        switch self {
+        case .challenge: return "meow1"
+        case .habit: return "meow2"
+        case .etc: return "meow3"
+        }
+    }
 }
 
 extension FailureCategory {
